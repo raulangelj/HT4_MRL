@@ -34,6 +34,9 @@ from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
+from scipy.stats import normaltest
+from sklearn.linear_model import Ridge
+from yellowbrick.regressor import ResidualsPlot
 # import sklearn.mixture as mixture
 # from sklearn import datasets
 # from sklearn.cluster import DBSCAN
@@ -86,7 +89,7 @@ train.head()
 
 # %%
 usefullAttr = ['SalePrice', 'LotArea', 'OverallCond', 'YearBuilt', 'MasVnrArea', 'TotalBsmtSF', '1stFlrSF',
-               '2ndFlrSF', 'GrLivArea', 'TotRmsAbvGrd', 'GarageCars', 'WoodDeckSF', 'OpenPorchSF', 'EnclosedPorch', 'PoolArea', 'Neighborhood']
+               '2ndFlrSF', 'GrLivArea', 'TotRmsAbvGrd', 'GarageCars', 'WoodDeckSF', 'OpenPorchSF', 'EnclosedPorch', 'PoolArea', 'Neighborhood', 'OverallQual']
 
 
 # %%
@@ -342,7 +345,7 @@ print(data['Clasificacion'].value_counts())
 
 # %%
 y = data['SalePrice']
-X = data.drop(['Clasificacion', 'SalePrice', 'cluster'], axis=1)
+X = data.drop(['Clasificacion', 'SalePrice', 'cluster', 'OverallQual'], axis=1)
 
 # %%
 X_train, X_test, y_train, y_test = train_test_split(
@@ -357,6 +360,7 @@ y_train
 
 # # Inicia de HT4
 # ## 2.	Elabore un modelo de regresión lineal utilizando el conjunto de entrenamiento que hizo para predecir los precios de las casas. Explique los resultados a los que llega. Muestre el modelo gráficamente. El experimento debe ser reproducible por lo que debe fijar que los conjuntos de entrenamiento y prueba sean los mismos siempre que se ejecute el código.
+
 
 # %%
 
@@ -392,4 +396,76 @@ print("Mean Squared Error: %.2f" %
 print("R squared: %.2f" % r2_score(p_length_t, p_length_pred))
 # %%
 
+# %% [markdown]
+# ## 3.	Analice el modelo. Determine si hay multicolinealidad en las variables, y cuáles son las que aportan al modelo, por su valor de significación. Haga un análisis de correlación de las variables del modelo y especifique si el modelo se adapta bien a los datos. Explique si hay sobreajuste (overfitting) o no. En caso de existir sobreajuste, haga otro modelo que lo corrija.
+
+# # FALTA ECHAR CASACA!!
+
 # %%
+hm = sns.heatmap(data.corr(), annot=True, mask=np.triu(
+    np.ones_like(data.corr(), dtype=bool)), vmin=-1, vmax=1)
+plt.show()
+
+# %%
+# Extraido de: https://towardsdatascience.com/statistics-in-python-collinearity-and-multicollinearity-4cc4dcd82b3f
+
+
+def calculate_vif(df, features):
+    vif, tolerance = {}, {}
+    # all the features that you want to examine
+    for feature in features:
+        # extract all the other features you will regress against
+        X = [f for f in features if f != feature]
+        X, y = df[X], df[feature]
+        # extract r-squared from the fit
+        r2 = LinearRegression().fit(X, y).score(X, y)
+
+        # calculate tolerance
+        tolerance[feature] = 1 - r2
+        # calculate VIF
+        vif[feature] = 1/(tolerance[feature])
+    # return VIF DataFrame
+    return pd.DataFrame({'VIF': vif, 'Tolerance': tolerance})
+
+
+# %%
+calculate_vif(df=data, features=['SalePrice',
+              'GrLivArea', 'LotArea', 'OverallQual'])
+
+# %% [markdown]
+# ## 4.	Determine la calidad del modelo realizando un análisis de los residuos.
+
+# %%
+residuales = p_length_t - p_length_pred
+len(residuales)
+
+
+# %%
+plt.plot(p_width_t, residuales, 'o', color='darkblue')
+plt.title("Gráfico de Residuales")
+plt.xlabel("Variable independiente")
+plt.ylabel("Residuales")
+
+# %% [markdown]
+# Según el gráfico de los residuos se puede observar que parecen estar aleatoriamente distribuidos alrededor de 0
+
+# %%
+sns.distplot(residuales)
+plt.title("Residuales")
+
+# %%
+plt.boxplot(residuales)
+
+# %%
+normaltest(residuales)
+
+# %% [markdown]
+# Podemos ver que los residuos siguen una distribución normal puesto que no se puede rechazar la hipotesis nula de normalidad porque el valor de p es mayor a 0.05
+
+# %%
+model = Ridge()
+visualizer = ResidualsPlot(model)
+visualizer.fit(p_width, p_length)
+visualizer.score(p_width_t, p_length_t)
+
+# %% 5.	Utilice el modelo con el conjunto de prueba y determine la eficiencia del algoritmo para predecir el precio de las casas.
