@@ -399,7 +399,7 @@ print("R squared: %.2f" % r2_score(p_length_t, p_length_pred))
 # %% [markdown]
 # ## 3.	Analice el modelo. Determine si hay multicolinealidad en las variables, y cuáles son las que aportan al modelo, por su valor de significación. Haga un análisis de correlación de las variables del modelo y especifique si el modelo se adapta bien a los datos. Explique si hay sobreajuste (overfitting) o no. En caso de existir sobreajuste, haga otro modelo que lo corrija.
 
-# # FALTA ECHAR CASACA!!
+print('La multicolinealidad ocurre cuando hay dos o más variables independientes en un modelo de regresión múltiple, en el heatmap podemos observar la relacion entre varias variables, esto por medio de los indices de correlacion, podemos ver que los cuadros con colores mas claros estan mas correlacionados que aquellas variables con un indice menor, entonces a traves de la grafica podemos sacar conclusioones de que variables influyen sobre cuales en el contexto de las casas. Otro de los indicadores es el VIF, lo cual nos muestra tambien alto grado de correlacion')
 
 # %%
 hm = sns.heatmap(data.corr(), annot=True, mask=np.triu(
@@ -469,3 +469,16 @@ visualizer.fit(p_width, p_length)
 visualizer.score(p_width_t, p_length_t)
 
 # %% 5.	Utilice el modelo con el conjunto de prueba y determine la eficiencia del algoritmo para predecir el precio de las casas.
+y = data['Clasificacion']
+X = data.drop(['Clasificacion', 'SalePrice'], axis=1)
+X_train, X_test, y_train, y_test = train_test_split(
+X, y, test_size=0.3, train_size=0.7)
+y_train
+arbol = DecisionTreeClassifier(max_depth=4, random_state=42)
+arbol = arbol.fit(X_train, y_train)
+y_pred = arbol.predict(X_test)
+print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
+print("Precision:", metrics.precision_score(
+    y_test, y_pred, average='weighted'))
+print('Se determino que el conjunto de prueba tiene una alta eficiencia, si observamos la precision y la exactitud, podemos ver valores cercanos a uno, lo cual indica que el algoritmo para determinar el precio de las casas si es eficiente')
+# %%
