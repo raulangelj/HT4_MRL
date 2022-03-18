@@ -468,11 +468,12 @@ visualizer = ResidualsPlot(model)
 visualizer.fit(p_width, p_length)
 visualizer.score(p_width_t, p_length_t)
 
-# %% 5.	Utilice el modelo con el conjunto de prueba y determine la eficiencia del algoritmo para predecir el precio de las casas.
+# %%
+# 5.	Utilice el modelo con el conjunto de prueba y determine la eficiencia del algoritmo para predecir el precio de las casas.
 y = data['Clasificacion']
 X = data.drop(['Clasificacion', 'SalePrice'], axis=1)
 X_train, X_test, y_train, y_test = train_test_split(
-X, y, test_size=0.3, train_size=0.7)
+    X, y, test_size=0.3, train_size=0.7)
 y_train
 arbol = DecisionTreeClassifier(max_depth=4, random_state=42)
 arbol = arbol.fit(X_train, y_train)
@@ -483,10 +484,13 @@ print("Precision:", metrics.precision_score(
 print('Se determino que el conjunto de prueba tiene una alta eficiencia, si observamos la precision y la exactitud, podemos ver valores cercanos a uno, lo cual indica que el algoritmo para determinar el precio de las casas si es eficiente')
 # %%
 
-# %% 6.	Discuta sobre la efectividad del modelo. Haga los gráficos que crea que le pueden ayudar en la discusión.
+# %%
+# 6.	Discuta sobre la efectividad del modelo. Haga los gráficos que crea que le pueden ayudar en la discusión.
 print("Se puede observar que el arbol de decisión tuvo un accuracy de 0.84 y una precisión de 0.84. dado esto se puede concluir que el modelo es efectivo en un 84%. También se puede observar que los puntos residuales se encuentran en un radio de 2 y por su concentración en 0 se puede concluir que es efectivo.")
-plt.figure(figsize=(20,5))
+plt.figure(figsize=(20, 5))
 data['Clasificacion'].value_counts().plot(kind='bar')
 plt.show()
 # %% 7.	Compare la eficiencia del algoritmo con el resultado obtenido con el árbol de decisión (el de regresión). ¿Cuál es mejor para predecir? ¿Cuál se demoró más en procesar?
 print("El coeficiente de R nos dice como el algoritmo de arbol de decisión es mucho más eficaz y mejor para predecir. Con los valores de AIC y BIC concluimos que el arbol de decisión es el más eficiente.")
+
+# %%
